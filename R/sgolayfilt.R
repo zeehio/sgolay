@@ -1,18 +1,33 @@
-filter_sweep <- function(x, filt) {
-  len <- length(x)
-  n <- length(filt)
-  k <- floor(n/2)
-  how_many <- len - 2*k
-  out <- numeric(length(x))
-  for (j in seq_along(filt)) {
-    first_idx <- max(1L, j - k)
-    last_idx <- min(len, j + k)
-    out[first_idx:last_idx] <- out[first_idx:last_idx] + filt[j]*x[first_idx:last_idx]
+# filter_sweep <- function(x, filt) {
+#   # FIXME: It does not do what I want it to do. Probably I still don't know what I want
+#   len <- length(x)
+#   n <- length(filt)
+#   k <- floor(n/2)
+#   #lengtout <- len - 2*k
+#   out <- numeric(length(x))
+#   for (j in seq_along(filt)) {
+#     first_idx <- max(1L, j - k)
+#     last_idx <- min(len, j + k)
+#     out[first_idx:last_idx] <- out[first_idx:last_idx] + filt[j]*x[first_idx:last_idx]
+#   }
+#   out[(k + 1L):(len - k)]
+# }
+
+convolve_prepare <- function(x, conj = FALSE, plan = NULL, impl = "auto") {
+  if (conj) {
+    do_conj <- Conj
+  } else {
+    do_conj <- identity
   }
-  out[(k + 1L):(len - k)]
+  do_conj(stats::fft(x))
 }
 
-sgolayfilt_impl <- function(x, filt, rowwise, return_matrix, engine = c("fft", "filter"), filter_embed = "cfilter") {
+convolve_do <- function(fft_x, conj_fft_y) {
+  Re(stats::fft(fft_x * conj_fft_y, inverse = TRUE))/length(fft_x)
+}
+
+
+sgolayfilt_impl <- function(x, filt, rowwise, return_matrix, engine = c("fft", "filter")) {
   if (rowwise) {
     num_ser <- nrow(x)
     len <- ncol(x)
@@ -40,7 +55,7 @@ sgolayfilt_impl <- function(x, filt, rowwise, return_matrix, engine = c("fft", "
     conv_coefs <- filt[k + 1L, n:1L]
     fft_length <- length(conv_coefs) + len - 1L
     conv_coefs_padded <- c(rev(conv_coefs), rep(0, len - 1L))
-    conj_fft_y_prep <- sgolay:::convolve_prepare(conv_coefs_padded, conj = TRUE)
+    conj_fft_y_prep <- convolve_prepare(conv_coefs_padded, conj = TRUE)
     x_padded <- numeric(fft_length)
     center_points_idx <- (k + 1L):(len - k)
     for (i in seq_len(num_ser)) {
@@ -49,8 +64,8 @@ sgolayfilt_impl <- function(x, filt, rowwise, return_matrix, engine = c("fft", "
       } else {
         x_padded[length(conv_coefs):fft_length] <- x[,i]
       }
-      fft_x_prep <- sgolay:::convolve_prepare(x_padded, conj = FALSE)
-      center_points <- sgolay:::convolve_do(
+      fft_x_prep <- convolve_prepare(x_padded, conj = FALSE)
+      center_points <- convolve_do(
         fft_x_prep,
         conj_fft_y_prep
       )[n:len]
@@ -61,56 +76,55 @@ sgolayfilt_impl <- function(x, filt, rowwise, return_matrix, engine = c("fft", "
       }
     }
   } else if (engine == "filter") {
-    if (filter_embed == "cfilter") {
-      xvec <- numeric(n + len - 1L)
-      filt_cent <- filt[k + 1L, n:1L]
-      offset <- 2L*n - 1L
-      center_points_idx <- (k + 1L):(len - k)
-      for (i in seq_len(num_ser)) {
-        if (rowwise) {
-          xvec[n:length(xvec)] <- x[i,]
-          out[i, center_points_idx] <- .Call(stats:::C_cfilter, xvec, filt_cent, 1L, FALSE)[offset:(offset + len - 2*k - 1L)]
-        } else {
-          xvec[n:length(xvec)] <- x[,i]
-          out[center_points_idx, i] <- .Call(stats:::C_cfilter, xvec, filt_cent, 1L, FALSE)[offset:(offset + len - 2*k - 1L)]
+    ## cfilter: Fastest, lowest footprint but private:
+    ## FIXME: Consider embedding a copy of C_cfilter from stats and licensing under GPL-2
+    # xvec <- numeric(n + len - 1L)
+    # filt_cent <- filt[k + 1L, n:1L]
+    # offset <- 2L*n - 1L
+    # center_points_idx <- (k + 1L):(len - k)
+    # for (i in seq_len(num_ser)) {
+    #   if (rowwise) {
+    #     xvec[n:length(xvec)] <- x[i,]
+    #     out[i, center_points_idx] <- .Call(stats:::C_cfilter, xvec, filt_cent, 1L, FALSE)[offset:(offset + len - 2*k - 1L)]
+    #   } else {
+    #     xvec[n:length(xvec)] <- x[,i]
+    #     out[center_points_idx, i] <- .Call(stats:::C_cfilter, xvec, filt_cent, 1L, FALSE)[offset:(offset + len - 2*k - 1L)]
+    #   }
+    # }
+    ## embed: Slow but works well
+    center_points_idx <- (k + 1L):(len - k)
+    filt_cent <- filt[k + 1L, n:1L]
+    embedded_signal <- matrix(0, nrow = len - 2*k, ncol = n)
+    for (i in seq_len(num_ser)) {
+      if (rowwise) {
+        embedded_signal[] <- stats::embed(x[i,], n)
+        for (j in n:1L) {
+          first_idx <- (n - j + 1L)
+          last_idx <- first_idx + len - 2*k - 1
+          embedded_signal[,j] <- x[i,first_idx:last_idx]
         }
+        out[i, center_points_idx] <- embedded_signal %*% filt_cent
+      } else {
+        for (j in n:1L) {
+          first_idx <- (n - j + 1L)
+          last_idx <- first_idx + len - 2*k - 1
+          embedded_signal[,j] <- x[first_idx:last_idx, i]
+        }
+        out[center_points_idx, i] <- embedded_signal %*% filt_cent
       }
-    } else if (filter_embed == "embed") {
-      center_points_idx <- (k + 1L):(len - k)
-      filt_cent <- filt[k + 1L, n:1L]
-      embedded_signal <- matrix(0, nrow = len - 2*k, ncol = n)
-      for (i in seq_len(num_ser)) {
-        if (rowwise) {
-          embedded_signal[] <- stats::embed(x[i,], n)
-        } else {
-          #embedded_signal[] <- stats::embed(x[,i], n)
-          for (j in n:1L) {
-            first_idx <- (n - j + 1L)
-            last_idx <- first_idx + len - 2*k - 1
-            embedded_signal[,j] <- x[first_idx:last_idx, i]
-          }
-        }
-        if (rowwise) {
-          out[i, center_points_idx] <- embedded_signal %*% filt_cent
-        } else {
-          out[center_points_idx, i] <- embedded_signal %*% filt_cent
-        }
-      }
-    } else if (filter_embed == "filter_sweep") {
-      center_points_idx <- (k + 1L):(len - k)
-      filt_cent <- filt[k + 1L, n:1L]
-      for (i in seq_len(num_ser)) {
-        if (rowwise) {
-          out[i, center_points_idx] <- filter_sweep(x[i,], filt_cent)
-        } else {
-          out[center_points_idx, i] <- filter_sweep(x[,i], filt_cent)
-        }
-      }
-    } else {
-      stop("Wrong filter_embed method")
     }
+    # filter_sweep: possibly fast, but still with a bug:
+    # center_points_idx <- (k + 1L):(len - k)
+    # filt_cent <- filt[k + 1L, n:1L]
+    # for (i in seq_len(num_ser)) {
+    #   if (rowwise) {
+    #     out[i, center_points_idx] <- filter_sweep(x[i,], filt_cent)
+    #   } else {
+    #     out[center_points_idx, i] <- filter_sweep(x[,i], filt_cent)
+    #   }
+    # }
   } else {
-    stop("Wrong engine")
+    stop("Wrong engine. Use fft or filter")
   }
   if (!return_matrix) {
     attr(out, "dim") <- NULL
