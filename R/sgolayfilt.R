@@ -72,8 +72,7 @@ sgolayfilt_impl <- function(x, filt, rowwise, return_matrix, engine = c("fft", "
           out[i, center_points_idx] <- .Call(stats:::C_cfilter, xvec, filt_cent, 1L, FALSE)[offset:(offset + len - 2*k - 1L)]
         } else {
           xvec[n:length(xvec)] <- x[,i]
-          potato2 <- .Call(stats:::C_cfilter, xvec, filt_cent, 1L, FALSE)[offset:(offset + len - 2*k - 1L)]
-          out[center_points_idx, i] <- potato2
+          out[center_points_idx, i] <- .Call(stats:::C_cfilter, xvec, filt_cent, 1L, FALSE)[offset:(offset + len - 2*k - 1L)]
         }
       }
     } else if (filter_embed == "embed") {
@@ -84,24 +83,17 @@ sgolayfilt_impl <- function(x, filt, rowwise, return_matrix, engine = c("fft", "
         if (rowwise) {
           embedded_signal[] <- stats::embed(x[i,], n)
         } else {
-          embedded_signal[] <- stats::embed(x[,i], n)
+          #embedded_signal[] <- stats::embed(x[,i], n)
+          for (j in n:1L) {
+            first_idx <- (n - j + 1L)
+            last_idx <- first_idx + len - 2*k - 1
+            embedded_signal[,j] <- x[first_idx:last_idx, i]
+          }
         }
-        cosa2 <- embedded_signal %*% filt_cent
         if (rowwise) {
-          out[i, center_points_idx] <- cosa2
+          out[i, center_points_idx] <- embedded_signal %*% filt_cent
         } else {
-          out[center_points_idx, i] <- cosa2
-        }
-      }
-    } else if (filter_embed == "slider") {
-      center_points_idx <- (k + 1L):(len - k)
-      filt_cent <- filt[k + 1L, n:1L]
-      for (i in seq_len(num_ser)) {
-        if (rowwise) {
-          out[i, center_points_idx] <- slider::slide_dbl(x[i,], ~ c(. %*% filt_cent), .before = k, .after = k, .complete = TRUE)[(k + 1L):(len - k)]
-        } else {
-          cosa2 <- slider::slide_dbl(x[,i], ~ sum(. * filt_cent), .before = k, .after = k, .complete = TRUE)
-          out[center_points_idx, i] <- cosa2[(k + 1L):(len - k)]
+          out[center_points_idx, i] <- embedded_signal %*% filt_cent
         }
       }
     } else if (filter_embed == "filter_sweep") {
