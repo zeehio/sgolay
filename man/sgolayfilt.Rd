@@ -11,8 +11,7 @@ sgolayfilt(
   m = 0,
   ts = 1,
   rowwise = FALSE,
-  engine = c("auto", "fft", "signal"),
-  ...
+  engine = c("auto", "fft", "filter")
 )
 }
 \arguments{
@@ -28,10 +27,8 @@ sgolayfilt(
 
 \item{rowwise}{If \code{TRUE}, Apply the filter by rows instead of by columns}
 
-\item{engine}{"fft" Uses the Fast Fourier Transform to apply the filter. "signal" uses \code{signal::sgolayfilt}. Both give
-the same results, fft is usually faster on matrices.}
-
-\item{...}{If engine = "fft}
+\item{engine}{"fft" Uses the Fast Fourier Transform to apply the filter. "filter" uses a convolution. Both give
+the same results, fft is usually faster on larger filter lengths, and larger matrices.}
 }
 \value{
 A matrix or vector of the same dimensions or length as \code{x}, with the result of the filter
