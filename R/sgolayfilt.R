@@ -39,7 +39,7 @@ choose_engine <- function(x, filter_length, orig_engine) {
 #' @inheritParams signal::sgolayfilt
 #' @param rowwise If `TRUE`, Apply the filter by rows instead of by columns
 #' @param engine "fft" Uses the Fast Fourier Transform to apply the filter. "filter" uses a convolution. Both give
-#' the same results, fft is usually faster on larger filter lengths, and larger matrices.
+#' the same results, fft is more efficient on larger filter lengths.
 #'
 #' @return A matrix or vector of the same dimensions or length as `x`, with the result of the filter
 #' @export
@@ -117,3 +117,15 @@ sgolayfilt <- function(x, p = 3, n = p + 3 - p %% 2, m = 0, ts = 1, rowwise = FA
   }
   out
 }
+
+
+# A benchmark:
+# x <- matrix(runif(6000*3000), nrow = 6000, ncol = 3000)
+# filt <- sgolay::sgolay(p = 2, n = 51)
+#
+# bm <- bench::mark(
+#   filter = {sgolay::sgolayfilt(x, filt, rowwise = FALSE, engine = "filter")},
+#   fft = {sgolay::sgolayfilt(x, filt, rowwise = FALSE, engine = "fft")},
+# )
+# bm
+

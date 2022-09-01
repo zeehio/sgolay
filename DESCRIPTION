@@ -20,7 +20,12 @@ Authors@R: c(
     role = "cph"
   )
  )
-Description: Efficient Savitzky-Golay filtering for real vectors.
+Description: Efficient Savitzky-Golay filtering for real vectors. This package
+ implements one dimensional Savitzky-Golay filters that can be applied to
+ vectors and matrices (either row-wise or column-wise). Vectorization and memory
+ allocations have been profiled to reduce computational fingerprint. Short filter
+ lengths are implemented in the direct space, while longer filters are implemented
+ in frequency space, using FFT.
 Imports: signal
 License: GPL (>= 2)
 Encoding: UTF-8
