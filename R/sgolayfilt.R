@@ -1,29 +1,9 @@
-# filter_sweep <- function(x, filt) {
-#   # FIXME: It does not do what I want it to do. Probably I still don't know what I want
-#   len <- length(x)
-#   n <- length(filt)
-#   k <- floor(n/2)
-#   #lengtout <- len - 2*k
-#   out <- numeric(length(x))
-#   for (j in seq_along(filt)) {
-#     first_idx <- max(1L, j - k)
-#     last_idx <- min(len, j + k)
-#     out[first_idx:last_idx] <- out[first_idx:last_idx] + filt[j]*x[first_idx:last_idx]
-#   }
-#   out[(k + 1L):(len - k)]
-# }
-
-convolve_prepare <- function(x, conj = FALSE, plan = NULL, impl = "auto") {
-  if (conj) {
-    do_conj <- Conj
-  } else {
-    do_conj <- identity
-  }
-  do_conj(stats::fft(x))
+convolve_circular <- function(x, y, conj=TRUE) {
+  .Call(cconvolve_circular, x, y, conj)
 }
 
-convolve_do <- function(fft_x, conj_fft_y) {
-  Re(stats::fft(fft_x * conj_fft_y, inverse = TRUE))/length(fft_x)
+filter <- function(x, y) {
+  .Call(cfilter, x, y)
 }
 
 
@@ -63,6 +43,7 @@ choose_engine <- function(x, filter_length, orig_engine) {
 #'
 #' @return A matrix or vector of the same dimensions or length as `x`, with the result of the filter
 #' @export
+#' @useDynLib sgolay, .registration=TRUE
 #'
 #' @examples
 #' x <- runif(300)
