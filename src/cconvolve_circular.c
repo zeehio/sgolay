@@ -45,13 +45,29 @@ SEXP cconvolve_circular(SEXP sx, SEXP sy, SEXP sconj)
     conj = 1;
   }
 
-  /* FIXME: coerce integers and logicals */
-  if (TYPEOF(sx) != REALSXP) {
+
+  switch (TYPEOF(sx)) {
+  case INTSXP:
+  case LGLSXP:
+  case REALSXP:
+    sx = Rf_coerceVector(sx, REALSXP);
+    break;
+  default:
     Rf_error("x is not real. It should be a real matrix");
   }
-  if (TYPEOF(sy) != REALSXP) {
+  PROTECT(sx);
+
+  switch (TYPEOF(sy)) {
+  case INTSXP:
+  case LGLSXP:
+  case REALSXP:
+    sy = Rf_coerceVector(sy, REALSXP);
+    break;
+  default:
     Rf_error("y is not real. It should be a real vector");
   }
+  PROTECT(sy);
+
 
   d = Rf_getAttrib(sx, R_DimSymbol);
   if (d == R_NilValue || Rf_length(d) > 2) {
@@ -120,6 +136,7 @@ SEXP cconvolve_circular(SEXP sx, SEXP sy, SEXP sconj)
     fft_work(xpad_r, xpad_i, 1, ans_rows, 1, 1, work, iwork);
     /* product of fft of sans and sypad, saving to fft of sans */
 
+    /* There's no blas for complex-complex element wise product */
     /* xpad*ypad: (a + ib) (c + id) = (ac - bd) + i(ad + bc). */
     for (i = 0; i< ans_rows; i++) {
       dtmp = xpad_r[i]*ypad_r[i] - xpad_i[i]*ypad_i[i];
@@ -136,7 +153,7 @@ SEXP cconvolve_circular(SEXP sx, SEXP sy, SEXP sconj)
   scale_factor = 1./ans_rows;
   increment = 1;
   F77_CALL(dscal)(&num_elem, &scale_factor, ans, &increment);
-  UNPROTECT(1);
+  UNPROTECT(3);
   return(sans);
   }
 
