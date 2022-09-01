@@ -3,5 +3,4 @@
 export(sgolay)
 export(sgolayfilt)
 importFrom(signal,sgolay)
-useDynLib(sgolay,cconvolve_circular)
-useDynLib(sgolay,cfilter)
+useDynLib(sgolay, .registration=TRUE)
