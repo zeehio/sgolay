@@ -126,6 +126,7 @@ sgolayfilt <- function(x, p = 3, n = p + 3 - p %% 2, m = 0, ts = 1, rowwise = FA
 # filt <- sgolay::sgolay(p = 2, n = 51)
 #
 # bm <- bench::mark(
+#   signal = {apply(x, 2L, function(y) signal::sgolayfilt(y, filt)},
 #   filter = {sgolay::sgolayfilt(x, filt, rowwise = FALSE, engine = "filter")},
 #   fft = {sgolay::sgolayfilt(x, filt, rowwise = FALSE, engine = "fft")},
 # )
