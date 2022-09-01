@@ -1,7 +1,7 @@
 Package: sgolay
 Type: Package
 Title: Efficient Savitzky-Golay Filtering
-Version: 0.1.0
+Version: 1.0.0
 Date: 2022-09-01
 Authors@R: c(
   person(
