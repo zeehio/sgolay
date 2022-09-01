@@ -2,7 +2,7 @@
 % Please edit documentation in R/sgolayfilt.R
 \name{sgolayfilt}
 \alias{sgolayfilt}
-\title{Savitzky-Golay filtering}
+\title{Apply a Savitzky-Golay smoothing filter}
 \usage{
 sgolayfilt(
   x,
@@ -34,7 +34,7 @@ the same results, fft is more efficient on larger filter lengths.}
 A matrix or vector of the same dimensions or length as \code{x}, with the result of the filter
 }
 \description{
-Savitzky-Golay filtering
+Smooth data or compute its derivatives with a Savitzky-Golay smoothing filter.
 }
 \examples{
 x <- runif(300)

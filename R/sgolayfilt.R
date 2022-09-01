@@ -33,7 +33,9 @@ choose_engine <- function(x, filter_length, orig_engine) {
   engine
 }
 
-#' Savitzky-Golay filtering
+#' Apply a Savitzky-Golay smoothing filter
+#'
+#' Smooth data or compute its derivatives with a Savitzky-Golay smoothing filter.
 #'
 #' @param x A numeric matrix or vector
 #' @inheritParams signal::sgolayfilt
