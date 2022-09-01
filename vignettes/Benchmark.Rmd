@@ -49,7 +49,7 @@ benchmark_helper <- function(signal_length, num_signals, filter_length, rowwise)
   selected_engine <- sgolay:::choose_engine(x = x, filter_length = filter_length, orig_engine = "auto")
 
   bm <- bench::mark(
-    signal = {sgolayfilt(x, filt, engine = "signal", rowwise = rowwise)},
+    signal = {sgolayfilt(x, filt, engine = "filter", rowwise = rowwise)},
     fft = {sgolayfilt(x, filt, engine = "fft", rowwise = rowwise)},
     time_unit = "s",
     filter_gc = FALSE
@@ -96,14 +96,13 @@ out <- purrr::map_dfr(list_res, dplyr::bind_cols)
 
 
 
-```{r}
-ggplot(out) + 
+```{r fig.height=10, fig.width=10}
+ggplot(dplyr::filter(out, rowwise == FALSE)) + 
   geom_col(
     aes(
       x = sprintf("%d", as.numeric(signal_length)),
-      y = 1 + as.numeric(min)*1000,
-      fill = engine,
-      color = rowwise
+      y = 1 + as.numeric(cpu_min)*1000,
+      fill = engine
     ),
     position = position_dodge()
   ) + 
@@ -115,13 +114,13 @@ ggplot(out) +
   facet_grid(rows = vars("Fil. length" = filter_length), cols = vars("Signals" = num_signals), labeller = label_both)
 ```
 
-```{r}
-ggplot(out) + 
+
+```{r fig.height=10, fig.width=10}
+ggplot(dplyr::filter(out, rowwise == FALSE)) + 
   geom_col(
     aes(
       x = sprintf("%d", as.numeric(signal_length)),
       y = as.numeric(mem_alloc),
-      color = rowwise,
       fill = engine
     ),
     position = position_dodge()
@@ -129,76 +128,29 @@ ggplot(out) +
   scale_y_log10(labels = scales::label_bytes()) +
   labs(
     x = "Signal length (points)",
-    y = "Memory allocated (bytes)"
+    y = "Memory allocated"
   ) +
-  facet_grid(filter_length~num_signals, labeller = label_both)
+  facet_grid(rows = vars("Fil. length" = filter_length), cols = vars("Signals" = num_signals), labeller = label_both)
 ```
 
 
+
 ```{r}
-ggplot(out) + 
-  geom_line(
+ggplot(dplyr::filter(out, engine == "signal")) + 
+  geom_col(
     aes(
-      x = as.numeric(signal_length),
-      y = as.numeric(mem_alloc),
-      color = engine,
-      linetype = rowwise
-    )
+      x = sprintf("%d", as.numeric(signal_length)),
+      y = 1 + as.numeric(cpu_min)*1000,
+      fill = rowwise
+    ),
+    position = position_dodge()
   ) + 
-  scale_x_log10(name = "Signal length") +
-  scale_y_log10(name = "Memory allocated", labels = scales::label_bytes()) +
-  facet_grid(filter_length~num_signals, labeller = label_both)
+  scale_y_log10() +
+  labs(
+    x = "Signal length (points)",
+    y = "CPU time (s)"
+  ) +
+  facet_grid(rows = vars("Fil. length" = filter_length), cols = vars("Signals" = num_signals), labeller = label_both)
+```
 ```
 
-
-
-
-
-```{r}
-cols <- 10000
-xmat_10_1000 <- matrix(runif(10*cols), nrow = 10, ncol = cols)
-xmat_100_100 <- matrix(runif(100*cols), nrow = 100, ncol = cols)
-xmat_1000_100 <- matrix(runif(1000*cols), nrow = 1000, ncol = cols)
-xmat_10000_100 <- matrix(runif(10000*cols), nrow = 10000, ncol = cols)
-
-
-bm_cols <- bench::mark(
-  signal = {sgolayfilt(x, filt, engine = "signal")},
-  fft = {sgolayfilt(x, filt, engine = "fft")},
-  me = {sgolayfilt(x, filt, engine = "auto")}
-)
-
-print(bm_cols)
-filt <- signal::sgolay(p = 2, n = 25, m = 0, ts = 1)
-x <- matrix(runif(4000*2), ncol = 2)
-bm_cols <- bench::mark(
-  signal = {sgolayfilt(x, filt, engine = "signal")},
-  me = {sgolayfilt(x, filt, engine = "auto")}
-)
-print(bm_cols)
-
-
-
-filt <- signal::sgolay(p = 2, n = 25, m = 0, ts = 1)
-x <- matrix(runif(4000*4000), ncol = 4000)
-bm_cols <- bench::mark(
-  signal = {sgolayfilt(x, filt, engine = "signal")},
-  me = {sgolayfilt(x, filt, engine = "auto")}
-)
-print(bm_cols)
-
-
-bm_rows <- bench::mark(
-  signal = {sgolayfilt(x, filt, engine = "signal", rowwise = TRUE)},
-  me = {sgolayfilt(x, filt, engine = "auto", rowwise = TRUE)}
-)
-print(bm_rows)
-
-x <- runif(1E6)
-bm_num <- bench::mark(
-  signal = {sgolayfilt(x, filt, engine = "signal")},
-  me = {sgolayfilt(x, filt, engine = "auto")}
-)
-print(bm_num)
-
-```
