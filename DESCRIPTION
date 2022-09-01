@@ -3,6 +3,8 @@ Type: Package
 Title: Efficient Savitzky-Golay Filtering
 Version: 1.0.0
 Date: 2022-09-01
+URL: https://github.com/zeehio/sgolay
+BugReports: http://github.com/zeehio/sgolay/issues
 Authors@R: c(
   person(
     given = "Sergio",
