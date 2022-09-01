@@ -10,20 +10,20 @@ Authors@R: c(
     role = c("aut", "cre"),
     comment = c(ORCID = "0000-0002-8994-1549")
   ),
-    person(
+  person(
+    given = "R Core Team and contributors worldwide",
+    role = c("ctb", "cph"),
+    comment = "stats_filter.c and fft.c sources are derived from the stats package R sources"
+  ),
+  person(
     given = "Institute for Bioengineering of Catalonia",
     role = "cph"
   )
  )
-Description: Efficient Savitzky-Golay filtering for real vecotrs based on Fast Fourier Transform
-Imports: signal, rlang
-Suggests: 
-    knitr,
-    rmarkdown,
-    purrr, ggplot2, dplyr
-License: MIT + file LICENSE
+Description: Efficient Savitzky-Golay filtering for real vectors.
+Imports: signal
+License: GPL (>= 2)
 Encoding: UTF-8
-LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
