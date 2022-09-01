@@ -75,6 +75,7 @@ sgolayfilt <- function(x, p = 3, n = p + 3 - p %% 2, m = 0, ts = 1, rowwise = FA
   } else {
     filt <- sgolay(p, n, m, ts)
   }
+  mode(x) <- "double"
   return_matrix <- TRUE
   if (!is.matrix(x)) {
     x <- matrix(x, ncol = 1)
