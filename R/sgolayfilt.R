@@ -27,111 +27,6 @@ convolve_do <- function(fft_x, conj_fft_y) {
 }
 
 
-sgolayfilt_impl <- function(x, filt, rowwise, return_matrix, engine = c("fft", "filter")) {
-  if (rowwise) {
-    num_ser <- nrow(x)
-    len <- ncol(x)
-  } else {
-    num_ser <- ncol(x)
-    len <- nrow(x)
-  }
-
-  n <- nrow(filt)
-  k <- floor(n/2)
-  out <- matrix(0, nrow = nrow(x), ncol = ncol(x))
-
-  coefs_for_first_points <- filt[1:k, ] # k x n
-  coefs_for_last_points <- filt[(k + 2L):n, ]
-
-  if (rowwise) {
-    out[, 1L:k] <- x[, 1L:n, drop = FALSE] %*% t(coefs_for_first_points)
-    out[, (len - k + 1L):len] <- x[, (len - n + 1L):len, drop = FALSE] %*% t(coefs_for_last_points)
-  } else {
-    out[1L:k, ] <- coefs_for_first_points %*% x[1L:n, , drop = FALSE]
-    out[(len - k + 1L):len,] <- coefs_for_last_points %*% x[(len - n + 1L):len, , drop = FALSE]
-  }
-
-  if (engine == "fft") {
-    conv_coefs <- filt[k + 1L, n:1L]
-    fft_length <- length(conv_coefs) + len - 1L
-    conv_coefs_padded <- c(rev(conv_coefs), rep(0, len - 1L))
-    conj_fft_y_prep <- convolve_prepare(conv_coefs_padded, conj = TRUE)
-    x_padded <- numeric(fft_length)
-    center_points_idx <- (k + 1L):(len - k)
-    for (i in seq_len(num_ser)) {
-      if (rowwise) {
-        x_padded[length(conv_coefs):fft_length] <- x[i,]
-      } else {
-        x_padded[length(conv_coefs):fft_length] <- x[,i]
-      }
-      fft_x_prep <- convolve_prepare(x_padded, conj = FALSE)
-      center_points <- convolve_do(
-        fft_x_prep,
-        conj_fft_y_prep
-      )[n:len]
-      if (rowwise) {
-        out[i, center_points_idx] <- center_points
-      } else {
-        out[center_points_idx, i] <- center_points
-      }
-    }
-  } else if (engine == "filter") {
-    ## cfilter: Fastest, lowest footprint but private:
-    ## FIXME: Consider embedding a copy of C_cfilter from stats and licensing under GPL-2
-    # xvec <- numeric(n + len - 1L)
-    # filt_cent <- filt[k + 1L, n:1L]
-    # offset <- 2L*n - 1L
-    # center_points_idx <- (k + 1L):(len - k)
-    # for (i in seq_len(num_ser)) {
-    #   if (rowwise) {
-    #     xvec[n:length(xvec)] <- x[i,]
-    #     out[i, center_points_idx] <- .Call(stats:::C_cfilter, xvec, filt_cent, 1L, FALSE)[offset:(offset + len - 2*k - 1L)]
-    #   } else {
-    #     xvec[n:length(xvec)] <- x[,i]
-    #     out[center_points_idx, i] <- .Call(stats:::C_cfilter, xvec, filt_cent, 1L, FALSE)[offset:(offset + len - 2*k - 1L)]
-    #   }
-    # }
-    ## embed: Slow but works well
-    center_points_idx <- (k + 1L):(len - k)
-    filt_cent <- filt[k + 1L, n:1L]
-    embedded_signal <- matrix(0, nrow = len - 2*k, ncol = n)
-    for (i in seq_len(num_ser)) {
-      if (rowwise) {
-        embedded_signal[] <- stats::embed(x[i,], n)
-        for (j in n:1L) {
-          first_idx <- (n - j + 1L)
-          last_idx <- first_idx + len - 2*k - 1
-          embedded_signal[,j] <- x[i,first_idx:last_idx]
-        }
-        out[i, center_points_idx] <- embedded_signal %*% filt_cent
-      } else {
-        for (j in n:1L) {
-          first_idx <- (n - j + 1L)
-          last_idx <- first_idx + len - 2*k - 1
-          embedded_signal[,j] <- x[first_idx:last_idx, i]
-        }
-        out[center_points_idx, i] <- embedded_signal %*% filt_cent
-      }
-    }
-    # filter_sweep: possibly fast, but still with a bug:
-    # center_points_idx <- (k + 1L):(len - k)
-    # filt_cent <- filt[k + 1L, n:1L]
-    # for (i in seq_len(num_ser)) {
-    #   if (rowwise) {
-    #     out[i, center_points_idx] <- filter_sweep(x[i,], filt_cent)
-    #   } else {
-    #     out[center_points_idx, i] <- filter_sweep(x[,i], filt_cent)
-    #   }
-    # }
-  } else {
-    stop("Wrong engine. Use fft or filter")
-  }
-  if (!return_matrix) {
-    attr(out, "dim") <- NULL
-  }
-  out
-}
-
 #' @importFrom signal sgolay
 #' @export
 signal::sgolay
@@ -143,23 +38,15 @@ choose_engine <- function(x, filter_length, orig_engine) {
     return(engine)
   }
   if (engine == "auto") {
-    if (is.matrix(x)) {
-      if (filter_length > 100) {
-        engine <- "fft"
-      } else {
-        engine <- "filter"
-      }
+    if (filter_length > 29) {
+      engine <- "fft"
+    } else {
+      engine <- "filter"
     }
   }
   if (engine == "fft" && anyNA(x)) {
     if (orig_engine == "fft") {
-      rlang::warn(
-        message = c(
-          'Switching sgolayfilt engine from "fft" to "filter"',
-          "!" = "The fft engine does not handle missing values.",
-          "i" = "Using engine = 'filter' instead."
-        )
-      )
+      warning('Switching sgolayfilt engine from "fft" to "filter". The fft engine does not handle missing values')
     }
     engine <- "filter"
   }
@@ -195,6 +82,56 @@ sgolayfilt <- function(x, p = 3, n = p + 3 - p %% 2, m = 0, ts = 1, rowwise = FA
     rowwise <- FALSE
   }
   engine <- choose_engine(x = x, filter_length = nrow(filt), orig_engine = engine)
-  out <- sgolayfilt_impl(x, filt, rowwise, return_matrix, engine = engine)
+  if (rowwise) {
+    num_ser <- nrow(x)
+    len <- ncol(x)
+  } else {
+    num_ser <- ncol(x)
+    len <- nrow(x)
+  }
+
+  n <- nrow(filt)
+  k <- floor(n/2)
+  out <- matrix(0, nrow = nrow(x), ncol = ncol(x))
+
+  coefs_for_first_points <- filt[1:k, , drop = FALSE]
+  coefs_for_last_points <- filt[(k + 2L):n, , drop = FALSE]
+
+  if (rowwise) {
+    out[, 1L:k] <- x[, 1L:n, drop = FALSE] %*% t(coefs_for_first_points)
+    out[, (len - k + 1L):len] <- x[, (len - n + 1L):len, drop = FALSE] %*% t(coefs_for_last_points)
+  } else {
+    out[1L:k, ] <- coefs_for_first_points %*% x[1L:n, , drop = FALSE]
+    out[(len - k + 1L):len,] <- coefs_for_last_points %*% x[(len - n + 1L):len, , drop = FALSE]
+  }
+
+  if (engine == "fft") {
+    conv_coefs <- filt[k + 1L, n:1L]
+    center_points_idx <- (k + 1L):(len - k)
+    if (rowwise) {
+      out[,center_points_idx] <- t(convolve_circular(t(x), conv_coefs)[n:len,])
+    } else {
+      out[center_points_idx,] <- convolve_circular(x, conv_coefs)[n:len,]
+    }
+  } else if (engine == "filter") {
+    xvec <- numeric(n + len - 1L)
+    filt_cent <- filt[k + 1L, n:1L]
+    offset <- 2L*n - 1L
+    center_points_idx <- (k + 1L):(len - k)
+    for (i in seq_len(num_ser)) {
+      if (rowwise) {
+        xvec[n:length(xvec)] <- x[i,]
+        out[i, center_points_idx] <- filter(xvec, filt_cent)[offset:(offset + len - 2*k - 1L)]
+      } else {
+        xvec[n:length(xvec)] <- x[,i]
+        out[center_points_idx, i] <- filter(xvec, filt_cent)[offset:(offset + len - 2*k - 1L)]
+      }
+    }
+  } else {
+    stop("Wrong engine. Use fft or filter")
+  }
+  if (!return_matrix) {
+    attr(out, "dim") <- NULL
+  }
   out
 }
