@@ -37,6 +37,6 @@ A matrix or vector of the same dimensions or length as \code{x}, with the result
 Savitzky-Golay filtering
 }
 \examples{
-x <- runif(300)
+x <- c(1:400, 401:1)
 y <- sgolayfilt(x, p=2, n = 21)
 }
