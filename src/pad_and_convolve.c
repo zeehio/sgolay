@@ -151,6 +151,6 @@ SEXP pad_and_convolve(SEXP sx, SEXP sy, SEXP sconj)
   F77_CALL(dscal)(&num_elem, &scale_factor, ans, &increment);
   UNPROTECT(3);
   return(sans);
-  }
+}
 
 
