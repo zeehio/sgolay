@@ -2,7 +2,7 @@
 
 ## Comments
 
-All the comments from the reviewer were addressed (email on Sept 5th):
+All the comments from the reviewer were addressed (email from Sept 5th):
 
 > Thanks,
 >
@@ -61,6 +61,7 @@ holders.
 > Please fix and resubmit.
 > 
 
+Thanks for your detailed feedback.
 
 ## Test environments
 * local Ubuntu 22.04 install, R 4.2.1
