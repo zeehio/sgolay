@@ -1,3 +1,23 @@
+#' @noRd
+#' Zero pad and convolve (efficiently)
+#'
+#' Given two real vectors x and y,
+#'   n = length(x) + length(y) - 1
+#'   x is left-padded with zeros up to length n
+#'   y is right-padded with zeros up to length n
+#'
+#' x_fft = fft(x_padded)
+#' y_fft = fft(y_padded)
+#'
+#' if (conj == TRUE) y_fft <- Conj(y_fft)
+#'
+#' return Re(fft(x_fft * y_fft, inverse = TRUE)/n)
+#'
+#' If either x or y are matrices, this is vectorized assuming
+#' each column is a different signal.
+#'
+#' Having matrices on both x and y is not supported.
+#'
 pad_and_convolve <- function(x, y, conj=TRUE) {
   .Call(c_pad_and_convolve, x, y, conj)
 }
