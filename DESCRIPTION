@@ -23,13 +23,15 @@ Authors@R: c(
     role = "cph"
   )
  )
-Description: Efficient Savitzky-Golay filtering for real vectors. Savitzky-Golay
- filters can be used to smooth signals or to compute their derivatives. This package
- implements one dimensional Savitzky-Golay filters that can be applied to
+Description: Smoothing signals and computing their derivatives is a common
+ requirement in signal processing workflows. Savitzky-Golay filters are a
+ established method able to do both (Savitzky and Golay, 1964 <doi: 10.1021/ac60214a047>).
+ This package implements one dimensional Savitzky-Golay filters that can be applied to
  vectors and matrices (either row-wise or column-wise).
  Vectorization and memory allocations have been profiled to reduce computational
  fingerprint. Short filter lengths are implemented in the direct space, while
- longer filters are implemented in frequency space, using FFT.
+ longer filters are implemented in frequency space, using a Fast Fourier
+ Transform (FFT).
 Imports: signal
 License: GPL (>= 2)
 Encoding: UTF-8
