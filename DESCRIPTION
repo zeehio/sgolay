@@ -13,7 +13,7 @@ Authors@R: c(
     comment = c(ORCID = "0000-0002-8994-1549")
   ),
   person(
-    given = "Robert", family = "Gentleman"
+    given = "Robert", family = "Gentleman",
     role = c("ctb", "cph"),
     comment = "Contributor to src/stats_filter.c and src/fft.c (derived from the stats R package)"
   ),
