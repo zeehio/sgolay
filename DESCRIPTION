@@ -7,16 +7,35 @@ URL: https://github.com/zeehio/sgolay
 BugReports: http://github.com/zeehio/sgolay/issues
 Authors@R: c(
   person(
-    given = "Sergio",
-    family = "Oller Moreno",
+    given = "Sergio", family = "Oller Moreno",
     email = "sergioller@gmail.com",
     role = c("aut", "cre"),
     comment = c(ORCID = "0000-0002-8994-1549")
   ),
   person(
-    given = "R Core Team and contributors worldwide",
+    given = "Robert", family = "Gentleman"
     role = c("ctb", "cph"),
-    comment = "stats_filter.c and fft.c sources are derived from the stats package R sources"
+    comment = "Contributor to src/stats_filter.c and src/fft.c (derived from the stats R package)"
+  ),
+  person(
+    given = "Ross", family = "Ihaka",
+    role = c("ctb", "cph"),
+    comment = "Contributor to src/stats_filter.c and src/fft.c (derived from the stats R package)"
+  ),
+  person(
+    given = "Brian", family = "Ripley",
+    role = c("ctb", "cph"),
+    comment = "Contributor to src/stats_filter.c and src/fft.c (derived from the stats R package)"
+  ),
+  person(
+    given = "Martin", family = "Maechler",
+    role = c("ctb", "cph"),
+    comment = "Contributor to src/stats_filter.c and src/fft.c (derived from the stats R package)"
+  ),
+  person(
+    given = "Duncan", family = "Murdoch",
+    role = c("ctb", "cph"),
+    comment = "Contributor to src/stats_filter.c and src/fft.c (derived from the stats R package)"
   ),
   person(
     given = "Institute for Bioengineering of Catalonia",
