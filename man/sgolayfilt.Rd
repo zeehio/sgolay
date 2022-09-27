@@ -27,8 +27,10 @@ sgolayfilt(
 
 \item{rowwise}{If \code{TRUE}, Apply the filter by rows instead of by columns}
 
-\item{engine}{"fft" Uses the Fast Fourier Transform to apply the filter. "filter" uses a convolution. Both give
-the same results, fft is more efficient on larger filter lengths.}
+\item{engine}{How is the filter applied. This parameter impacts the performance, but not the results.
+"auto" will select automatically an efficient engine. \code{"fft"} uses a Fast
+Fourier Transform to apply the filter. \code{"filter"} uses a convolution in the
+direct space. \code{"fft"} is more efficient on larger filter lengths.}
 }
 \value{
 A matrix or vector of the same dimensions or length as \code{x}, with the result of the filter

@@ -1,9 +1,9 @@
-convolve_circular <- function(x, y, conj=TRUE) {
-  .Call(cconvolve_circular, x, y, conj)
+pad_and_convolve <- function(x, y, conj=TRUE) {
+  .Call(c_pad_and_convolve, x, y, conj)
 }
 
 filter <- function(x, y) {
-  .Call(cfilter, x, y)
+  .Call(c_filter, x, y)
 }
 
 
@@ -40,8 +40,10 @@ choose_engine <- function(x, filter_length, orig_engine) {
 #' @param x A numeric matrix or vector
 #' @inheritParams signal::sgolayfilt
 #' @param rowwise If `TRUE`, Apply the filter by rows instead of by columns
-#' @param engine "fft" Uses the Fast Fourier Transform to apply the filter. "filter" uses a convolution. Both give
-#' the same results, fft is more efficient on larger filter lengths.
+#' @param engine How is the filter applied. This parameter impacts the performance, but not the results.
+#' "auto" will select automatically an efficient engine. `"fft"` uses a Fast
+#' Fourier Transform to apply the filter. `"filter"` uses a convolution in the
+#' direct space. `"fft"` is more efficient on larger filter lengths.
 #'
 #' @return A matrix or vector of the same dimensions or length as `x`, with the result of the filter
 #' @export
@@ -93,9 +95,9 @@ sgolayfilt <- function(x, p = 3, n = p + 3 - p %% 2, m = 0, ts = 1, rowwise = FA
     conv_coefs <- filt[k + 1L, n:1L]
     center_points_idx <- (k + 1L):(len - k)
     if (rowwise) {
-      out[,center_points_idx] <- t(convolve_circular(t(x), conv_coefs)[n:len,])
+      out[,center_points_idx] <- t(pad_and_convolve(t(x), conv_coefs)[n:len,])
     } else {
-      out[center_points_idx,] <- convolve_circular(x, conv_coefs)[n:len,]
+      out[center_points_idx,] <- pad_and_convolve(x, conv_coefs)[n:len,]
     }
   } else if (engine == "filter") {
     xvec <- numeric(n + len - 1L)

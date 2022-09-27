@@ -13,14 +13,10 @@ void fft_factor(int n, int *pmaxf, int *pmaxp);
 Rboolean fft_work(double *a, double *b, int nseg, int n, int nspn, int isn,
                   double *work, int *iwork);
 
-/* given sx as a real matrix and sy as a real vector
- * this function returns a real matrix `ans` of `nrow(sx) + length(sy) -1` rows and
- * ncol(sx) columns where:
- * ans[,j] = stats::convolve(sx[,j], sy, conj = sconj, type = "circular").
- *
+/*
  * Long dimensions are not supported
  */
-SEXP cconvolve_circular(SEXP sx, SEXP sy, SEXP sconj)
+SEXP pad_and_convolve(SEXP sx, SEXP sy, SEXP sconj)
 {
   int conj, x_rows, x_cols, y_len, ans_rows, ans_cols;
   int i, j;

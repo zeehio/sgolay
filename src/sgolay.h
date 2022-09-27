@@ -2,5 +2,5 @@
 #include <R.h>
 #include <Rinternals.h>
 
-SEXP cconvolve_circular(SEXP sx, SEXP sy, SEXP sconj);
-SEXP cfilter(SEXP sx, SEXP sfilter);
+SEXP pad_and_convolve(SEXP sx, SEXP sy, SEXP sconj);
+SEXP filter(SEXP sx, SEXP sfilter);

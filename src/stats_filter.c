@@ -34,7 +34,7 @@
 
 
 /* Trimmed down version of cfilter */
-SEXP cfilter(SEXP sx, SEXP sfilter)
+SEXP filter(SEXP sx, SEXP sfilter)
 {
    if (TYPEOF(sx) != REALSXP || TYPEOF(sfilter) != REALSXP)
        error("invalid input");

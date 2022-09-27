@@ -1,8 +1,8 @@
 #include "sgolay.h"
 
 static const R_CallMethodDef callMethods[]  = {
-  {"cconvolve_circular", (DL_FUNC) &cconvolve_circular, 3},
-  {"cfilter", (DL_FUNC) &cfilter, 2},
+  {"c_pad_and_convolve", (DL_FUNC) &pad_and_convolve, 3},
+  {"c_filter", (DL_FUNC) &filter, 2},
   {NULL, NULL, 0}
 };
 
