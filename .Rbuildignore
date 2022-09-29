@@ -3,3 +3,6 @@
 ^LICENSE\.md$
 ^cran-comments.md$
 ^CRAN-SUBMISSION$
+^README\.Rmd$
+^\.github$
+^codecov\.yml$
