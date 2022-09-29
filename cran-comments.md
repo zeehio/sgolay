@@ -1,6 +1,38 @@
-# This is a resubmission
+# This is the second resubmission
 
-## Comments
+## Test environments
+
+* local Ubuntu 22.04 install, R 4.2.1
+* win-builder (devel and release)
+* r_hub
+
+## R CMD check results
+There are no NOTEs, WARNINGs or ERRORs.
+
+## Downstream dependencies
+
+This is a new package and there are no downstream dependencies.
+
+
+## Comments (2022-09-29)
+
+
+>   Found the following (possibly) invalid URLs:
+>     URL: http://github.com/zeehio/sgolay/issues (moved to
+>          https://github.com/zeehio/sgolay/issues)
+>       From: DESCRIPTION
+>       Status: 301
+>       Message: Moved Permanently
+>
+> Please change http --> https, add trailing slashes, or follow moved
+> content as appropriate.
+
+Fixed. My sincere apologies.
+
+
+# This was from the first resubmission
+
+## Comments (2022-09-27)
 
 All the comments from the reviewer were addressed (email from Sept 5th):
 
@@ -63,14 +95,3 @@ holders.
 
 Thanks for your detailed feedback.
 
-## Test environments
-* local Ubuntu 22.04 install, R 4.2.1
-* win-builder (devel and release)
-* r_hub
-
-## R CMD check results
-There are no NOTEs, WARNINGs or ERRORs.
-
-## Downstream dependencies
-
-This is a new package and there are no downstream dependencies.
