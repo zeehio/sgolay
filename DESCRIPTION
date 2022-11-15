@@ -20,7 +20,7 @@ Authors@R: c(
   person(
     given = "Ross", family = "Ihaka",
     role = c("ctb", "cph"),
-    comment = "Contributor to src/stats_filter.c and src/fft.c (derived from the stats R package)"
+    comment = "Contributor to src/stats_filter.c,  src/fft.c, src/hclust.c (derived from the stats R package)"
   ),
   person(
     given = "Brian", family = "Ripley",
@@ -30,12 +30,22 @@ Authors@R: c(
   person(
     given = "Martin", family = "Maechler",
     role = c("ctb", "cph"),
-    comment = "Contributor to src/stats_filter.c and src/fft.c (derived from the stats R package)"
+    comment = "Contributor to src/stats_filter.c, src/fft.c, src/hclust.c (derived from the stats R package)"
   ),
   person(
     given = "Duncan", family = "Murdoch",
     role = c("ctb", "cph"),
     comment = "Contributor to src/stats_filter.c and src/fft.c (derived from the stats R package)"
+  ),
+  person(
+    given = "Fritz", family = "Leisch",
+    role = c("ctb", "cph"),
+    comment = "src/hclust.c (derived from the stats R package)"
+  ),
+  person(
+    given = "Fionn", family = "Murtagh",
+    role = c("ctb", "cph"),
+    comment = "src/hclust.c (derived from the stats R package)"
   ),
   person(
     given = "Institute for Bioengineering of Catalonia",

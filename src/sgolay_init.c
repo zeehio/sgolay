@@ -3,6 +3,8 @@
 static const R_CallMethodDef callMethods[]  = {
   {"c_pad_and_convolve", (DL_FUNC) &pad_and_convolve, 3},
   {"c_filter", (DL_FUNC) &filter, 2},
+  {"c_hclust", (DL_FUNC) &c_hclust, 4},
+  {"c_hcass", (DL_FUNC) &c_hcass, 3},
   {NULL, NULL, 0}
 };
 
