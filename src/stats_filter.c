@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1999-2016   The R Core Team
+ *  Copyright (C) 1999-2022   The R Core Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,8 +17,16 @@
  *  https://www.R-project.org/Licenses/.
  */
 
- /* Trimmed down and modified by Sergio Oller <sergioller@gmail.com> on
-  * Sept 2022
+ /* Changes by Sergio Oller <sergioller@gmail.com>
+  *
+  * 2023-03-30:
+  *   - Updated to commit 6556d7f844028e2b850cd0cf5683d8b6271341c8
+  *   - Fix `int maxj` to `R_len_t maxj`
+  *   - Fixed my_isok macro
+  *
+  * 2022-09:
+  *   Trimmed down and modified from
+  *   https://github.com/wch/r-source/commits/trunk/src/library/stats/src/filter.c
   */
 
 #include <R.h>
@@ -30,7 +38,7 @@
 #endif
 
 // currently ISNAN includes NAs
-#define my_isok(x) (!ISNA(x) & !ISNAN(x))
+#define my_isok(x) (!ISNA(x) && !ISNAN(x))
 
 
 /* Trimmed down version of cfilter */
@@ -49,7 +57,7 @@ SEXP filter(SEXP sx, SEXP sfilter)
     for (i = 0; i < nf - 1; i++) {
       out[i] = NA_REAL;
     }
-    int maxj;
+    R_xlen_t maxj;
   	for(i = nf; i < nx; i++) {
 	    z = 0;
   	  maxj = min(nf, i+1);
