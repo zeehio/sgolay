@@ -71,3 +71,18 @@ test06_sgolayfilt_x_length_equals_filter_length <- function() {
   checkEquals(yref, y_filter, msg = "Check sgolayfilt when length(x) == n (filter engine)")
   checkEquals(yref, y_fft, msg = "Check sgolayfilt when length(x) == n (fft engine)")
 }
+
+test07_choose_engine_auto_threshold <- function() {
+  # filter_length > 29 was empirically chosen as the crossover where the fft
+  # engine becomes faster than the direct filter engine. Pin the exact
+  # boundary so it can't drift silently in a future refactor.
+  x <- runif(1000)
+  checkEquals(
+    "filter", sgolay:::choose_engine(x, filter_length = 29, orig_engine = "auto"),
+    msg = "auto engine must use the direct filter engine at filter_length == 29"
+  )
+  checkEquals(
+    "fft", sgolay:::choose_engine(x, filter_length = 30, orig_engine = "auto"),
+    msg = "auto engine must switch to the fft engine at filter_length == 30"
+  )
+}
