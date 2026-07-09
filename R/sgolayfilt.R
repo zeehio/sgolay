@@ -80,6 +80,9 @@ sgolayfilt <- function(x, p = 3, n = p + 3 - p %% 2, m = 0, ts = 1, rowwise = FA
   }
 
   n <- nrow(filt)
+  if (len < n) {
+    stop("sgolayfilt: x must have at least ", n, " observations along the filtered dimension, got ", len)
+  }
   k <- floor(n/2)
   out <- matrix(0, nrow = nrow(x), ncol = ncol(x))
 
