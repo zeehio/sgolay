@@ -30,3 +30,23 @@ test02_sgolayfilt_matrix_rowwisetrue <- function() {
   checkEquals(yref, y_filter, msg = "Check sgolayfilt on a matrix (rowwise=TRUE, filter engine)")
   checkEquals(yref, y_fft, msg = "Check sgolayfilt on a matrix (rowwise=TRUE, fft engine)")
 }
+
+test03_sgolayfilt_plain_matrix_p <- function() {
+  # p can be a plain matrix without the "sgolayFilter" class (e.g. after
+  # unclass()), not only an object returned directly by sgolay()
+  filt_classed <- sgolay::sgolay(p = 2, n = 5)
+  filt <- unclass(filt_classed)
+  x <- runif(500)
+  yref <- signal::sgolayfilt(x, filt_classed)
+  y_filter <- sgolayfilt(x, filt, engine = "filter")
+  y_fft <- sgolayfilt(x, filt, engine = "fft")
+  checkEquals(yref, y_filter, msg = "Check sgolayfilt with a plain matrix p (filter engine)")
+  checkEquals(yref, y_fft, msg = "Check sgolayfilt with a plain matrix p (fft engine)")
+}
+
+test04_sgolayfilt_even_rows_p_errors <- function() {
+  # An even number of rows has no well-defined center row and must be rejected
+  even_filt <- matrix(1, nrow = 4, ncol = 4)
+  x <- runif(50)
+  checkException(sgolayfilt(x, even_filt), msg = "Check sgolayfilt rejects an even-row filter matrix p")
+}
