@@ -86,3 +86,38 @@ test07_choose_engine_auto_threshold <- function() {
     msg = "auto engine must switch to the fft engine at filter_length == 30"
   )
 }
+
+.capture_warnings <- function(expr) {
+  warnings_seen <- character(0)
+  result <- withCallingHandlers(
+    expr,
+    warning = function(w) {
+      warnings_seen <<- c(warnings_seen, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  list(result = result, warnings = warnings_seen)
+}
+
+test08_choose_engine_na_fallback <- function() {
+  # The fft engine cannot handle NA values, so choose_engine() must fall back
+  # to "filter" whenever x has NAs. Only warn when the caller explicitly
+  # asked for "fft": a silent auto -> filter downgrade should stay silent.
+  x_na <- c(1, NA, 3)
+
+  explicit <- .capture_warnings(
+    sgolay:::choose_engine(x_na, filter_length = 30, orig_engine = "fft")
+  )
+  checkEquals("filter", explicit$result, msg = "explicit fft engine must fall back to filter when x has NA")
+  checkEquals(1L, length(explicit$warnings), msg = "explicit fft -> filter fallback must warn exactly once")
+  checkTrue(
+    grepl('Switching sgolayfilt engine from "fft" to "filter"', explicit$warnings[1], fixed = TRUE),
+    msg = "warning message must explain the fft -> filter fallback"
+  )
+
+  auto <- .capture_warnings(
+    sgolay:::choose_engine(x_na, filter_length = 30, orig_engine = "auto")
+  )
+  checkEquals("filter", auto$result, msg = "auto engine must also fall back to filter when x has NA")
+  checkEquals(0L, length(auto$warnings), msg = "auto -> filter fallback (due to NA) must stay silent")
+}
