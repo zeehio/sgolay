@@ -55,8 +55,11 @@ choose_engine <- function(x, filter_length, orig_engine) {
 sgolayfilt <- function(x, p = 3, n = p + 3 - p %% 2, m = 0, ts = 1, rowwise = FALSE,
                        engine = c("auto", "fft", "filter")) {
   engine <- match.arg(engine)
-  if (inherits(p, "sgolayFilter") || (!is.null(dim(p)) && dim(p) > 1)) {
+  if (inherits(p, "sgolayFilter") || is.matrix(p)) {
     filt <- p
+    if (nrow(filt) %% 2 == 0) {
+      stop("sgolayfilt: the filter coefficient matrix `p` must have an odd number of rows, got ", nrow(filt))
+    }
   } else {
     filt <- sgolay(p, n, m, ts)
   }
