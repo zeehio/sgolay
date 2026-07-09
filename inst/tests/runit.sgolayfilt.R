@@ -50,3 +50,24 @@ test04_sgolayfilt_even_rows_p_errors <- function() {
   x <- runif(50)
   checkException(sgolayfilt(x, even_filt), msg = "Check sgolayfilt rejects an even-row filter matrix p")
 }
+
+test05_sgolayfilt_short_x_errors <- function() {
+  # x shorter than the filter length must be rejected with a clear error
+  # instead of an obscure out-of-bounds indexing failure
+  filt <- sgolay::sgolay(p = 2, n = 5)
+  checkException(sgolayfilt(runif(3), filt), msg = "Check sgolayfilt rejects a vector shorter than the filter")
+  x <- matrix(runif(2 * 3), nrow = 2, ncol = 3)
+  checkException(sgolayfilt(x, filt, rowwise = TRUE), msg = "Check sgolayfilt rejects a rowwise matrix shorter than the filter")
+}
+
+test06_sgolayfilt_x_length_equals_filter_length <- function() {
+  # x exactly as long as the filter is the smallest valid input and must
+  # still work (boundary just above the rejected case in test05)
+  filt <- sgolay::sgolay(p = 2, n = 5)
+  x <- runif(5)
+  yref <- signal::sgolayfilt(x, filt)
+  y_filter <- sgolayfilt(x, filt, engine = "filter")
+  y_fft <- sgolayfilt(x, filt, engine = "fft")
+  checkEquals(yref, y_filter, msg = "Check sgolayfilt when length(x) == n (filter engine)")
+  checkEquals(yref, y_fft, msg = "Check sgolayfilt when length(x) == n (fft engine)")
+}
