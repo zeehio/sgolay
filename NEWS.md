@@ -1,3 +1,5 @@
+# sgolay 1.0.4.9000
+
 # sgolay 1.0.4 (2026-07-09)
 
 - Fix a crash on R >= 4.3 in `sgolayfilt()` when a plain (unclassed) filter
